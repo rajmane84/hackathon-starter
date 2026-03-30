@@ -1,6 +1,5 @@
 import { env } from "../config/env.js";
 import nodemailer from "nodemailer";
-import { resend } from "../config/resend.js";
 import { ApiError } from "./apiError.js";
 import { getOTPTemplate } from "../constants/index.js";
 
@@ -17,8 +16,10 @@ export const sendOTP = async (email: string, otp: string) => {
   const { subject, text, html } = getOTPTemplate(otp);
 
   if (env.NODE_ENV === "production") {
+    const { resend } = await import("../config/resend.js");
+
     const { data, error } = await resend.emails.send({
-      from: "Test App <no-reply@rajmane.dev>",
+      from: "Test App <test@rajmane.dev>",
       to: email,
       subject,
       text,

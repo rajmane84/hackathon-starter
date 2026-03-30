@@ -31,8 +31,11 @@ app.use(cors(corsOptions));
 app.use("/api/v1", apiLimiter, V1Router);
 
 // Route not found
-app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new ApiError(404, "Route Not Found"));
+app.use((req: Request, res: Response) => {
+  return res.status(404).json({
+    success: false,
+    message: "Route Not Found",
+  });
 });
 
 // Error handler
