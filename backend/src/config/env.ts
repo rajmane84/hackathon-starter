@@ -60,6 +60,7 @@ const envSchema = z
     MAILTRAP_PASS: z.string().optional(),
 
     // Email Config ( Production )
+    RESEND_API_KEY: z.string().optional(),
   })
   .superRefine((env, ctx) => {
     // 🔥 Production-specific checks

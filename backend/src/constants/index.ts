@@ -31,3 +31,18 @@ export const corsOptions: CorsOptions = {
 };
 
 export const MAX_SESSIONS = 5; // Maximum concurrent device sessions
+
+export const getOTPTemplate = (otp: string) => {
+  const expiryMinutes = 5;
+  
+  return {
+    subject: "Your OTP for Registration Validation",
+    text: `Your OTP is: ${otp}. It will expire in ${expiryMinutes} minutes.`,
+    html: `
+      <div style="font-family: sans-serif; line-height: 1.5;">
+        <h3>Your OTP is: <b>${otp}</b></h3>
+        <p>It will expire in ${expiryMinutes} minutes.</p>
+      </div>
+    `,
+  };
+};
