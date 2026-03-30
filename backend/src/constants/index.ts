@@ -29,3 +29,5 @@ export const corsOptions: CorsOptions = {
   exposedHeaders: ["Set-Cookie"],
   optionsSuccessStatus: 200, // for legacy browsers
 };
+
+export const MAX_SESSIONS = 5; // Maximum concurrent device sessions
