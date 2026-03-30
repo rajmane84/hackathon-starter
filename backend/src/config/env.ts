@@ -54,15 +54,12 @@ const envSchema = z
       .regex(/^(\d+[smhd])$/, "REFRESH_TOKEN_EXPIRY must be like 15m, 7d, 24h")
       .default("7d"),
 
-    // Email Config
+    // Email Config ( Dev )
     MAILTRAP_TOKEN: z.string().optional(),
-    SMTP_HOST: z.string().optional(),
-    SMTP_PORT: z
-      .string()
-      .optional()
-      .transform((val) => (val ? Number(val) : 587)),
-    SMTP_USER: z.string().optional(),
-    SMTP_PASS: z.string().optional(),
+    MAILTRAP_USER: z.string().optional(),
+    MAILTRAP_PASS: z.string().optional(),
+
+    // Email Config ( Production )
   })
   .superRefine((env, ctx) => {
     // 🔥 Production-specific checks
