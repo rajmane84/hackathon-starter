@@ -7,6 +7,7 @@ interface IUser {
   email: string;
   password: string;
   refreshToken?: string;
+  isVerified: boolean;
 }
 
 interface IUserMethods {
@@ -33,6 +34,10 @@ const userSchema = new Schema<UserDocument, UserModel>(
     },
     refreshToken: {
       type: String,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },

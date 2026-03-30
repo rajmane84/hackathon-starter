@@ -14,9 +14,12 @@ import V1Router from "./routes/v1/route";
 import { apiLimiter } from "./middleware/ratelimiter.middleware";
 import { ApiError } from "./utils/apiError";
 import { corsOptions } from "./constants";
+import { connectDB } from "./utils/connectDB";
 
 const app = express();
 const PORT = env.PORT;
+
+connectDB(env.DATABASE_URL);
 
 app.set("trust proxy", 1);
 
