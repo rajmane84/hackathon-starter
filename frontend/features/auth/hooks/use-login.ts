@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { LoginInput } from "../lib/auth-validator";
 import { authService } from "../services/auth.service";
 import { sileo } from "sileo";
@@ -17,7 +17,7 @@ export const useLogin = () => {
 
       sileo.success({ 
         title: "Welcome back!", 
-        description: `Logged in as ${data.user.name}` 
+        description: `Logged in as ${data.user.email}` 
       });
       
       router.push("/dashboard");
