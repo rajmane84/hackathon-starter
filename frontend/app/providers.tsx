@@ -1,13 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "sileo";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000,
+            retry: 1,
+          },
+        },
+      }),
+  );
+
   return (
-    <ThemeProvider attribute="class" enableSystem={true}>
-      {children}
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" enableSystem={true}>
+        <Toaster position="top-right" />
+        {children}
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 
