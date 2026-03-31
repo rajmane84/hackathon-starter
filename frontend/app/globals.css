@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: oklch(98.5% 0 0);
+  --color-foreground: oklch(14.5% 0 0);
+}
+
+.dark {
+  --color-background: oklch(14.5% 0 0);
+  --color-foreground: oklch(98.5% 0 0);
+}
