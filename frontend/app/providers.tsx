@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { ThemeProvider } from "next-themes";
-import { Toaster } from "sileo";
+import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const Providers = ({ children }: { children: React.ReactNode }) => {

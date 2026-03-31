@@ -25,7 +25,7 @@ import {
 import { verifyOtpSchema, type VerifyOtpInput } from "../lib/auth-validator";
 import { useVerifyOtp } from "../hooks/use-register"; // Verify this path exists
 import { authService } from "../services/auth.service";
-import { sileo } from "sileo";
+import { toast } from "sonner"
 
 export const VerifyOtpClient = () => {
   const searchParams = useSearchParams();
@@ -71,13 +71,13 @@ export const VerifyOtpClient = () => {
   //   setIsResending(true);
   //   try {
   //     await authService.resendOtp(email);
-  //     sileo.success({
-  //       title: "OTP Resent",
+  //     toast.success("OTP Resent", {
   //       description: `Check ${email} for your new code.`,
   //     });
   //     setResendCooldown(60);
   //   } catch (err: any) {
-  //     sileo.error({ title: "Error", description: err.message });
+  //     console.error("OTP Resend Error: ", err);
+  //     toast.error("OTP Resend Error");
   //   } finally {
   //     setIsResending(false);
   //   }

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { LoginInput } from "../lib/auth-validator";
 import { authService } from "../services/auth.service";
-import { sileo } from "sileo";
+import { toast } from "sonner"
 
 export const useLogin = () => {
   const router = useRouter();
@@ -15,18 +15,15 @@ export const useLogin = () => {
       localStorage.setItem("refreshToken", data.refreshToken);
       queryClient.setQueryData(["auth-user"], data.user);
 
-      sileo.success({ 
-        title: "Welcome back!", 
+      toast.success("Welcome back!", { 
         description: `Logged in as ${data.user.email}` 
       });
       
       router.push("/dashboard");
     },
     onError: (error: Error) => {
-      sileo.error({ 
-        title: "Login Failed", 
-        description: error.message 
-      });
+      console.error("Login failed: ", error);
+      toast.error("Login Failed");
     },
   });
 };
