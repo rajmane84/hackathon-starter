@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { LoginInput } from "../lib/auth-validator";
 import { authService } from "../services/auth.service";
 import { toast } from "sonner"
+import { useAuthStore } from "@/store/auth.store";
 
 export const useLogin = () => {
   const router = useRouter();
@@ -11,8 +12,11 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (data: LoginInput) => authService.login(data),
     onSuccess: (data) => {
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
+      useAuthStore.getState().setUser({
+        _id: data.user._id,
+        email: data.user.email,
+        isVerified: data.user.isVerified,
+      });
       queryClient.setQueryData(["auth-user"], data.user);
 
       toast.success("Welcome back!", { 

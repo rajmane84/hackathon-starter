@@ -4,6 +4,7 @@ import { toast } from "sonner"
 import { authService } from "../services/auth.service";
 import type { RegisterInput, VerifyOtpInput } from "../lib/auth-validator";
 import type { AuthResponseData } from "../types";
+import { useAuthStore } from "@/store/auth.store";
 
 export const useRegister = () => {
   const router = useRouter();
@@ -36,6 +37,12 @@ export const useVerifyOtp = ({
     onSuccess: (data) => {
       toast.success("Email Verified", {
         description: "Your account has been created successfully. Welcome!",
+      });
+
+      useAuthStore.getState().setUser({
+        _id: data.user._id,
+        email: data.user.email,
+        isVerified: data.user.isVerified,
       });
       onSuccess?.(data);
       router.push("/dashboard");
