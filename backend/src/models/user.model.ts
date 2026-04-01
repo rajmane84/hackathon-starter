@@ -3,6 +3,10 @@ import bcrypt from "bcrypt";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { env } from "../config/env";
 import { MAX_SESSIONS } from "../constants";
+import crypto from "crypto";
+
+export const hashToken = (token: string): string =>
+  crypto.createHash("sha256").update(token).digest("hex");
 
 interface ISession {
   refreshToken: string;
@@ -97,58 +101,29 @@ userSchema.methods.generateRefreshToken = function (
     { expiresIn: env.REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"] },
   );
 
+  const hashedToken = hashToken(token);
   const now = new Date();
 
+  if (this.sessions.length >= MAX_SESSIONS) {
+    this.sessions.sort(
+      (a: ISession, b: ISession) =>
+        a.lastUsedAt.getTime() - b.lastUsedAt.getTime(),
+    );
+
+    // Remove the one that hasn't been used for the longest time
+    this.sessions.shift();
+  }
+
   const newSession: ISession = {
-    refreshToken: token,
+    refreshToken: hashedToken,
     deviceInfo,
     createdAt: now,
     lastUsedAt: now,
   };
 
-  // Evict oldest session(s) if at the device limit
-  if (this.sessions.length >= MAX_SESSIONS) {
-    this.sessions.sort(
-      (a: ISession, b: ISession) =>
-        a.createdAt.getTime() - b.createdAt.getTime(),
-    );
-    this.sessions.splice(0, this.sessions.length - MAX_SESSIONS + 1);
-  }
-
   this.sessions.push(newSession);
 
   return token;
-};
-
-userSchema.methods.addSession = async function (
-  refreshToken: string,
-  deviceInfo?: string,
-): Promise<void> {
-  const existing = this.sessions.find(
-    (s: ISession) => s.refreshToken === refreshToken,
-  );
-
-  if (existing) {
-    existing.lastUsedAt = new Date();
-    if (deviceInfo) existing.deviceInfo = deviceInfo;
-  } else {
-    if (this.sessions.length >= MAX_SESSIONS) {
-      this.sessions.sort(
-        (a: ISession, b: ISession) =>
-          a.createdAt.getTime() - b.createdAt.getTime(),
-      );
-      this.sessions.splice(0, this.sessions.length - MAX_SESSIONS + 1);
-    }
-
-    this.sessions.push({
-      refreshToken,
-      deviceInfo,
-      createdAt: new Date(),
-      lastUsedAt: new Date(),
-    });
-  }
-
-  await this.save();
 };
 
 userSchema.methods.removeSession = async function (

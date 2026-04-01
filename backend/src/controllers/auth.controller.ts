@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { User } from "../models/user.model.js";
+import { hashToken, User } from "../models/user.model.js";
 import { Otp, OtpPurpose } from "../models/otp.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
@@ -12,9 +12,6 @@ import { baseCookieOptions } from "../constants/index.js";
 import { registerSchema, verifyEmailOtpSchema } from "../schema/auth.schema.js";
 import bcrypt from "bcrypt";
 
-const hashToken = (token: string): string =>
-  crypto.createHash("sha256").update(token).digest("hex");
-
 const generateAccessAndRefreshTokens = async (
   userId: string,
   deviceInfo?: string,
@@ -23,17 +20,11 @@ const generateAccessAndRefreshTokens = async (
   if (!user) throw new ApiError(404, "User not found");
 
   const accessToken = user.generateAccessToken();
-  const plainRefreshToken = user.generateRefreshToken(deviceInfo);
-  const hashed = hashToken(plainRefreshToken);
-
-  const session = user.sessions[user.sessions.length - 1];
-  if (!session) throw new ApiError(500, "Failed to create session");
-  
-  session.refreshToken = hashed;
+  const refreshToken = user.generateRefreshToken(deviceInfo);
 
   await user.save({ validateBeforeSave: false });
 
-  return { accessToken, refreshToken: plainRefreshToken };
+  return { accessToken, refreshToken };
 };
 
 export const handleUserRegister = asyncHandler(
@@ -135,7 +126,9 @@ export const handleVerifyOTP = asyncHandler(
       deviceInfo,
     );
 
-    const verifiedUser = await User.findById(user._id).select("-password -sessions");
+    const verifiedUser = await User.findById(user._id).select(
+      "-password -sessions",
+    );
 
     return res
       .status(200)
@@ -181,7 +174,9 @@ export const handleUserLogin = asyncHandler(
       deviceInfo,
     );
 
-    const loggedInUser = await User.findById(user._id).select("-password -sessions");
+    const loggedInUser = await User.findById(user._id).select(
+      "-password -sessions",
+    );
 
     return res
       .status(200)
@@ -223,20 +218,20 @@ export const handleRefreshToken = asyncHandler(
       throw new ApiError(401, "Invalid or expired refresh token");
     }
 
-    const user = await User.findById(decodedToken._id);
-    if (!user) throw new ApiError(401, "Invalid refresh token");
+    const hashedIncoming = hashToken(incomingRefreshToken);
 
-    const incomingHashed = hashToken(incomingRefreshToken);
-    const session = user.sessions.find((s) => s.refreshToken === incomingHashed);
+    const user = await User.findOne({
+      _id: decodedToken._id,
+      "sessions.refreshToken": hashedIncoming,
+    });
 
-    if (!session) {
-      throw new ApiError(401, "Refresh token is expired or already used");
-    }
+    if (!user) throw new ApiError(401, "Session invalid or expired");
 
-    const deviceInfo = session.deviceInfo ?? req.headers["user-agent"];
+    user.sessions = user.sessions.filter(
+      (s) => s.refreshToken !== hashedIncoming,
+    );
 
-    await user.removeSession(incomingHashed);
-
+    const deviceInfo = req.headers["user-agent"];
     const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshTokens(user._id.toString(), deviceInfo);
 
@@ -268,8 +263,11 @@ export const handleLogout = asyncHandler(
 
       if (incomingRefreshToken) {
         const hashed = hashToken(incomingRefreshToken);
-        const user = await User.findById(req.user._id);
-        await user?.removeSession(hashed);
+
+        await User.updateOne(
+          { "sessions.refreshToken": hashed },
+          { $pull: { sessions: { refreshToken: hashed } } },
+        );
       }
     }
 
