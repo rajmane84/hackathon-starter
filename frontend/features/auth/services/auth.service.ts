@@ -48,4 +48,12 @@ export const authService = {
     const res = await apiClient.get("/auth/current-user");
     return res;
   },
+
+  refreshAccessToken: async(refreshToken: string) => {
+    const res = await apiClient.post<any, Omit<AuthResponseData, "user">>(
+      "/auth/refresh-token",
+      { refreshToken },
+    );
+    return res;
+  }
 };

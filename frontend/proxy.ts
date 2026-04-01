@@ -1,21 +1,24 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { authService } from "@/features/auth/services/auth.service";
 
 const PUBLIC_ROUTES = ["/auth/login", "/auth/register"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
-  const token = request.cookies.get("accessToken")?.value;
+  const accessToken = request.cookies.get("accessToken")?.value;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+  console.log("token", accessToken);
 
   let isValid = false;
 
-  if (token) {
+  if (accessToken) {
     try {
       // This checks if the token is tampered with and if it has expired
       await jwtVerify(
-        token,
+        accessToken,
         new TextEncoder().encode(process.env.NEXT_PUBLIC_ACCESS_TOKEN_SECRET!),
       );
       isValid = true;
@@ -25,13 +28,38 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  if (!isValid && refreshToken && !isPublicRoute) {
+    try {
+      const res = await authService.refreshAccessToken(refreshToken);
+
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        res;
+      isValid = true;
+
+      const response = NextResponse.next();
+      response.cookies.set("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: true,
+      });
+      response.cookies.set("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+      });
+
+      return response;
+    } catch (error) {
+      console.error("Silent refresh failed", error);
+    }
+  }
+
   if (!isValid && !isPublicRoute) {
     const response = NextResponse.redirect(new URL("/auth/login", request.url));
     response.cookies.delete("accessToken");
+    response.cookies.delete("refreshToken");
     return response;
   }
 
-  if (token && isPublicRoute) {
+  if (accessToken && isPublicRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
