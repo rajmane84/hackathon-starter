@@ -4,15 +4,24 @@ import { jwtVerify } from "jose";
 import { authService } from "@/features/auth/services/auth.service";
 
 const PUBLIC_ROUTES = ["/auth/login", "/auth/register"];
+const LOGOUT_ROUTE = "/logout";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isLogoutRoute = pathname === LOGOUT_ROUTE;
+
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
   // console.log("token", accessToken);
 
   let isValid = false;
+
+  // Skip everything for logout
+  if (isLogoutRoute) {
+    return NextResponse.next();
+  }
 
   if (accessToken) {
     try {
@@ -28,7 +37,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (!isValid && refreshToken && !isPublicRoute) {
+  if (!isValid && refreshToken && !isPublicRoute && !isLogoutRoute) {
     try {
       const res = await authService.refreshAccessToken(refreshToken);
 
