@@ -7,7 +7,7 @@ const envSchema = z
   .object({
     NODE_ENV: z
       .enum(["development", "production", "test"])
-      .default("development"),
+      .nonoptional(),
 
     PORT: z
       .string()
@@ -65,6 +65,7 @@ const envSchema = z
   .superRefine((env, ctx) => {
     // 🔥 Production-specific checks
     if (env.NODE_ENV === "production") {
+      console.log("env", process.env);
       if (env.ACCESS_TOKEN_SECRET === "dev-secret") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

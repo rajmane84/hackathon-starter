@@ -2,14 +2,14 @@ import type { CookieOptions } from "express";
 import { env } from "../config/env";
 import type { CorsOptions } from "cors";
 
-const isDev = env.NODE_ENV === "development";
+export const isDev = env.NODE_ENV === "development";
 
 export const baseCookieOptions: CookieOptions = {
   httpOnly: true, // prevents JS access (XSS protection)
   secure: isDev ? false : true, // HTTPS onl`y in production
   sameSite: isDev ? "lax" as const : "none" as const, // protects against CSRF (adjust if needed)
   // path: "/", // available across entire app
-  domain: undefined
+  domain: isDev ? undefined : ".rajmane.dev"
 };
 
 export const corsOptions: CorsOptions = {
@@ -18,6 +18,7 @@ export const corsOptions: CorsOptions = {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = env.CORS_ORIGIN;
+    console.log("Allowed Origins", allowedOrigins);
 
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);

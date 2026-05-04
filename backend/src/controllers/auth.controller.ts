@@ -8,7 +8,7 @@ import { sendOTP } from "../utils/mail.js";
 import crypto from "crypto";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { env } from "../config/env.js";
-import { baseCookieOptions } from "../constants/index.js";
+import { baseCookieOptions, isDev } from "../constants/index.js";
 import { registerSchema, verifyEmailOtpSchema } from "../schema/auth.schema.js";
 import bcrypt from "bcrypt";
 
@@ -177,6 +177,8 @@ export const handleUserLogin = asyncHandler(
     const loggedInUser = await User.findById(user._id).select(
       "-password -sessions",
     );
+
+    console.log("isDev", isDev);
 
     return res
       .status(200)
