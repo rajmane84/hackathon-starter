@@ -23,7 +23,7 @@ export const useLogin = () => {
         description: `Logged in as ${data.user.email}` 
       });
       
-      router.push("/dashboard");
+      router.push("/");
     },
     onError: (error: Error) => {
       console.error("Login failed: ", error);

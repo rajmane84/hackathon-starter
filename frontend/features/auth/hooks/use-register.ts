@@ -45,7 +45,7 @@ export const useVerifyOtp = ({
         isVerified: data.user.isVerified,
       });
       onSuccess?.(data);
-      router.push("/dashboard");
+      router.push("/");
     },
     onError: (error: Error) => {
       console.error("Verification failed: ", error);
