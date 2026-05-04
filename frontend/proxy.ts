@@ -10,7 +10,7 @@ export async function proxy(request: NextRequest) {
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
-  console.log("token", accessToken);
+  // console.log("token", accessToken);
 
   let isValid = false;
 

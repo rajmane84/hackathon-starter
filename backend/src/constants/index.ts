@@ -2,11 +2,14 @@ import type { CookieOptions } from "express";
 import { env } from "../config/env";
 import type { CorsOptions } from "cors";
 
+const isDev = env.NODE_ENV === "development";
+
 export const baseCookieOptions: CookieOptions = {
   httpOnly: true, // prevents JS access (XSS protection)
-  secure: env.NODE_ENV === "production", // HTTPS only in production
-  sameSite: env.NODE_ENV === "production" ? "none" : "lax", // protects against CSRF (adjust if needed)
-  path: "/", // available across entire app
+  secure: isDev ? false : true, // HTTPS onl`y in production
+  sameSite: isDev ? "lax" as const : "none" as const, // protects against CSRF (adjust if needed)
+  // path: "/", // available across entire app
+  domain: undefined
 };
 
 export const corsOptions: CorsOptions = {
